@@ -1,0 +1,25 @@
+publish:helm:
+  stage: publish
+  image: "${REGISTRY_URL}/paas/helmpack/chart-releaser:${CHART_RELEASER_VERSION}"
+  before_script:
+    - git remote add github https://oauth2:${CR_TOKEN}@github.com/${CR_OWNER}/${CR_GIT_REPO}.git --fetch --tags
+    - git config --global user.name "$CR_OWNER"
+    - git config --global user.email "$CR_EMAIL"
+    - cr version
+  script:
+    - cd "${CI_PROJECT_DIR}/charts/ghostfolio" || exit 1
+    - cr package -p ../..
+    - cr upload --remote github -p ../..
+    - cr index --remote github -p ../.. -i ../..
+    - cd "$CI_PROJECT_DIR" || exit 1
+    - git stash -a
+    - git checkout gh-pages
+    - git stash pop
+    - git add *.tgz index.yaml
+    - git commit -m "Updated GitHub pages with latest release $CI_COMMIT_TAG"
+    - git push github gh-pages
+  artifacts:
+    paths:
+      - "*.tgz"
+      - index.yaml
+    when: always

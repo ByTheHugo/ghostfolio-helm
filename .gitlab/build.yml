@@ -1,0 +1,62 @@
+
+security:gitleaks:
+  stage: security
+  image:
+    name: "${REGISTRY_URL}/paas/zricethezav/gitleaks:${GITLEAKS_VERSION}"
+    entrypoint: [""]
+  before_script:
+    - gitleaks version
+  script:
+    - gitleaks dir --follow-symlinks -v -f junit -r gitleaks-report.xml
+  artifacts:
+    paths:
+      - gitleaks-report.xml
+    reports:
+      junit: gitleaks-report.xml
+
+lint:helm:
+  stage: lint
+  image: "${REGISTRY_URL}/paas/alpine/helm:${HELM_VERSION}"
+  before_script:
+    - helm version
+  script:
+    - helm lint charts/ghostfolio
+
+cve:helm:trivy:
+  stage: cve
+  image:
+    name: "${REGISTRY_URL}/paas/aquasec/trivy:${TRIVY_VERSION}"
+    entrypoint: [""]
+  before_script:
+      - trivy --version
+
+      # Downloading template format from Github
+      - wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
+
+      # Update vuln db
+      - trivy clean --scan-cache
+      - trivy --cache-dir .trivycache/ image --download-db-only --no-progress
+  script:
+      # Fail on specified vulnerabilities
+      - |
+        trivy config \
+          --exit-code 1 \
+          --severity "$TRIVY_SEVERITY" \
+          --format template \
+          --template "@junit.tpl" \
+          -o junit-report.xml \
+          charts/ghostfolio
+  cache:
+      paths:
+      - .trivycache/
+  artifacts:
+      paths:
+          - junit-report.xml
+      reports:
+          junit: junit-report.xml
+  rules:
+    - if: '$IGNORE_TRIVY_CVE=="true"'
+      allow_failure: true
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - when: on_success
