@@ -1,6 +1,23 @@
 apiVersion: v1
 entries:
   ghostfolio:
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/maintainers: |
+        - name: Hugo CHUPIN
+          email: hugo@chupin.xyz
+    apiVersion: v2
+    appVersion: 2.159.0
+    created: "2025-05-10T10:48:49.066967827Z"
+    description: A Helm chart for Ghostfolio, an open source wealth management software.
+    digest: 198b87a67ebca92a24f3275cf34721d77ee463e8827d4d4c6e8c6df662491956
+    icon: https://avatars.githubusercontent.com/u/82473144
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/ByTheHugo/ghostfolio-helm/releases/download/ghostfolio-0.1.1/ghostfolio-0.1.1.tgz
+    version: 0.1.1
   - apiVersion: v2
     appVersion: 2.159.0
     created: "2025-05-04T11:51:20.794621538Z"
@@ -12,4 +29,4 @@ entries:
     urls:
     - https://github.com/ByTheHugo/ghostfolio-helm/releases/download/ghostfolio-0.1.0/ghostfolio-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-10T11:34:20.794621538Z"
+generated: "2025-05-10T10:48:49.066990892Z"
