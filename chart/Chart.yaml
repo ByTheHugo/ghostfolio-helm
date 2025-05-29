@@ -5,9 +5,24 @@ icon: https://avatars.githubusercontent.com/u/82473144
 annotations:
   artifacthub.io/alternativeName: ghostfolio-helm
   artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Ghostfolio website
+      url: https://ghostfol.io/
+    - name: Ghostfolio sources
+      url: https://github.com/ghostfolio/ghostfolio
   artifacthub.io/maintainers: |
     - name: Hugo CHUPIN
       email: hugo@chupin.xyz
+
+dependencies:
+  - name: postgresql
+    version: "16.7.4"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: postgresql.enabled
+  - name: redis
+    version: "21.1.7"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: redis.enabled
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -22,10 +37,10 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.1
+version: 0.2.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.159.0"
+appVersion: "2.164.0"

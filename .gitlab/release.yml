@@ -8,7 +8,7 @@ publish:helm:
     - mkdir -p /tmp/pages
     - cr version
   script:
-    - cd "${CI_PROJECT_DIR}/charts/ghostfolio" || exit 1
+    - cd "${CI_PROJECT_DIR}/chart" || exit 1
     - cr package -p /tmp/pages
     - cr upload --remote github -p /tmp/pages
     - cr index --remote github -p /tmp/pages -i /tmp/pages
