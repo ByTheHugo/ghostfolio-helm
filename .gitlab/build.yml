@@ -1,4 +1,3 @@
-
 security:gitleaks:
   stage: security
   image:
@@ -20,7 +19,44 @@ lint:helm:
   before_script:
     - helm version
   script:
-    - helm lint charts/ghostfolio
+    - cd chart
+    - helm dependency update
+    - |
+      helm lint \
+        --set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
+        --set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey"
+
+deploy:helm:
+  stage: deploy
+  image: "${REGISTRY_URL}/paas/alpine/helm:${HELM_VERSION}"
+  before_script:
+    - apk add --no-cache kubectl
+    - helm version
+    - kubectl version --client
+  script:
+    - cd chart
+    - helm dependency update
+    - |
+      helm upgrade \
+        --install \
+        --set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
+        --set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey" \
+        --set "global.defaultStorageClass=${HELM_STORAGE_CLASS}" \
+        --create-namespace \
+        --wait --wait-for-jobs \
+        --timeout "$HELM_TIMEOUT" \
+        -n "$HELM_NAMESPACE" \
+        "$HELM_RELEASE" ./
+  after_script:
+    - helm uninstall -n "$HELM_NAMESPACE" "$HELM_RELEASE"
+    - kubectl delete -n "$HELM_NAMESPACE" pvc --all --ignore-not-found
+  retry: 2
+  rules:
+    - if: '$SKIP_DEPLOY=="true"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - when: on_success
 
 cve:helm:trivy:
   stage: cve
@@ -28,6 +64,8 @@ cve:helm:trivy:
     name: "${REGISTRY_URL}/paas/aquasec/trivy:${TRIVY_VERSION}"
     entrypoint: [""]
   before_script:
+      - apk add --no-cache yq
+      - yq --version
       - trivy --version
 
       # Downloading template format from Github
@@ -37,15 +75,21 @@ cve:helm:trivy:
       - trivy clean --scan-cache
       - trivy --cache-dir .trivycache/ image --download-db-only --no-progress
   script:
+      # We don't wan't to scan chart dependencies
+      - yq -i 'del(.dependencies)' chart/Chart.yaml
+
       # Fail on specified vulnerabilities
       - |
         trivy config \
           --exit-code 1 \
+          --ignorefile .trivyignore.yaml \
           --severity "$TRIVY_SEVERITY" \
+          --helm-set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
+          --helm-set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey" \
           --format template \
           --template "@junit.tpl" \
           -o junit-report.xml \
-          charts/ghostfolio
+          chart
   cache:
       paths:
       - .trivycache/
@@ -54,9 +98,10 @@ cve:helm:trivy:
           - junit-report.xml
       reports:
           junit: junit-report.xml
+  retry: 2
   rules:
-    - if: '$IGNORE_TRIVY_CVE=="true"'
-      allow_failure: true
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
+    - if: '$IGNORE_TRIVY_CVE == "true"'
+      allow_failure: true
     - when: on_success

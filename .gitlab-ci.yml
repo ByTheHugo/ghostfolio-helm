@@ -3,6 +3,7 @@ stages:
   - lint
   - tests
   - build
+  - deploy
   - cve
   - publish
 
@@ -24,11 +25,17 @@ variables:
   TRIVY_VERSION: "latest"
   CHART_RELEASER_VERSION: "latest"
 
-  TRIVY_SEVERITY: HIGH,CRITICAL
+  TRIVY_SEVERITY: MEDIUM,HIGH,CRITICAL
   IGNORE_TRIVY_CVE: true
+  SKIP_DEPLOY: false
 
   CR_GIT_REPO: ghostfolio-helm
   CR_SKIP_EXISTING: true
+
+  HELM_NAMESPACE: e2e
+  HELM_RELEASE: ghostfolio
+  HELM_TIMEOUT: 10m
+  HELM_STORAGE_CLASS: local-path
 
 include:
   - local: .gitlab/build.yml

@@ -65,5 +65,18 @@ Create the name of the service account to use
 Create the PostgreSQL database URL
 */}}
 {{- define "ghostfolio.databaseUrl" -}}
+{{- $fullname := (include "ghostfolio.fullname" .) -}}
+{{ printf "postgresql://%s:%s@%s-postgresql.%s.svc:5432/%s?connect_timeout=300&sslmode=prefer" .Values.postgresql.auth.username .Values.postgresql.auth.password $fullname .Release.Namespace .Values.postgresql.auth.database }}
+{{- end }}
+
+{{- define "ghostfolio.externalDatabaseUrl" -}}
 {{- printf "postgresql://%s:%s@%s:%d/%s?%s" .Values.postgresql.user .Values.postgresql.password .Values.postgresql.host (.Values.postgresql.port | int) .Values.postgresql.database .Values.postgresql.options }}
+{{- end }}
+
+{{/*
+Create the Redis database URL
+*/}}
+{{- define "ghostfolio.redisHost" -}}
+{{- $fullname := (include "ghostfolio.fullname" .) -}}
+{{ printf "%s-redis-master" $fullname }}
 {{- end }}

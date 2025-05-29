@@ -2,6 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # Global default StorageClass for Persistent Volume(s) (used for Redis and/or PostgreSQL)
+  defaultStorageClass: ""
+
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
@@ -13,27 +17,47 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# This define the Ghostfolio configuration
 ghostfolio:
-  ACCESS_TOKEN_SALT: <INSERT_RANDOM_STRING>
-  JWT_SECRET_KEY: <INSERT_RANDOM_STRING>
+  ACCESS_TOKEN_SALT: ""
+  JWT_SECRET_KEY: ""
   BASE_CURRENCY: EUR
   API_KEY_COINGECKO_DEMO: ""
   API_KEY_COINGECKO_PRO: ""
   HOST: 0.0.0.0
   PORT: 3333
 
+# This define the PostgreSQL server configuration that will be deployed using Helm subchart.
+# Set the .enabled key to false to use an external PostgreSQL server.
+# For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
 postgresql:
-  database: ghostfolio-db
-  user: ghostfolio
-  password: ""
+  enabled: true
+  auth:
+    username: ghostfolio-user
+    password: ghostfolio-password
+    database: ghostfolio-db
+externalPostgresql:
   host: postgres
   port: 5432
+  auth:
+    username: external-ghostfolio-user
+    password: external-ghostfolio-password
+    database: external-ghostfolio-db
   options: connect_timeout=300&sslmode=prefer
 
+# This define the Redis server configuration that will be deployed using Helm subchart.
+# Set the .enabled key to false to use an external Redis server.
+# For more information checkout: https://artifacthub.io/packages/helm/bitnami/redis
 redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+    password: redis-password
+externalRedis:
   host: redis
   port: 6379
-  password: ""
+  password: "" # Leave empty to disable authentication
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -60,14 +84,17 @@ podAnnotations: {}
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-podSecurityContext: {}
+podSecurityContext:
   # fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+    - ALL
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
   runAsNonRoot: true
   runAsUser: 1000
 
@@ -95,17 +122,17 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
