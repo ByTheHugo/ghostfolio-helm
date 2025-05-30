@@ -1,5 +1,15 @@
-# Ghostfolio Helm Chart
 <!-- markdownlint-disable MD033 MD024 -->
+
+[![Latest Tag](https://img.shields.io/github/v/tag/ByTheHugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/tags)
+[![Project License](https://img.shields.io/github/license/ByTheHugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/blob/master/LICENSE)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/bythehugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/commits/master/)
+[![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/bythehugo/ghostfolio-helm)](https://github.com/ByTheHugo/ghostfolio-helm/commits/master/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-ghostfolio--helm-lightgrey)](https://github.com/ByTheHugo/ghostfolio-helm)
+[![ArtifactHub Package](https://img.shields.io/badge/ArtifactHub.io-ghostfolio--helm-lightblue)](https://artifacthub.io/packages/helm/ghostfolio/ghostfolio)
+
+![Ghostfolio Helm banner](docs/ghostfolio-helm-banner.png)
+
+# Ghostfolio Helm Chart
 
 This project provides a _Helm_ chart for deploying **[Ghostfolio: the Open Source Wealth Management Software](https://github.com/ghostfolio/ghostfolio)** into any _Kubernetes_ cluster. It integrates the official _Docker_ images built by the _Ghostfolio_ team and hosted on _[DockerHub](https://hub.docker.com/r/ghostfolio/ghostfolio)_. It also includes _[PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql)_ and _[Redis](https://artifacthub.io/packages/helm/bitnami/redis)_ servers that use the **Bitnami** charts, but it is easy to provide your own.
 
