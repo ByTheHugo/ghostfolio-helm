@@ -30,7 +30,7 @@ deploy:helm:
   stage: deploy
   image: "${REGISTRY_URL}/paas/alpine/helm:${HELM_VERSION}"
   before_script:
-    - apk add --no-cache kubectl
+    - apk add kubectl
     - helm version
     - kubectl version --client
   script:
@@ -46,9 +46,9 @@ deploy:helm:
         --wait --wait-for-jobs \
         --timeout "$HELM_TIMEOUT" \
         -n "$HELM_NAMESPACE" \
-        "$HELM_RELEASE" ./
+        "${HELM_RELEASE}-${CI_JOB_ID}" ./
   after_script:
-    - helm uninstall -n "$HELM_NAMESPACE" "$HELM_RELEASE"
+    - helm uninstall -n "$HELM_NAMESPACE" "${HELM_RELEASE}-${CI_JOB_ID}"
     - kubectl delete -n "$HELM_NAMESPACE" pvc --all --ignore-not-found
   retry: 2
   rules:
@@ -63,8 +63,10 @@ cve:helm:trivy:
   image:
     name: "${REGISTRY_URL}/paas/aquasec/trivy:${TRIVY_VERSION}"
     entrypoint: [""]
+  variables:
+    TRIVY_EXIT_CODE: 1
   before_script:
-      - apk add --no-cache yq
+      - apk add yq
       - yq --version
       - trivy --version
 
@@ -81,7 +83,7 @@ cve:helm:trivy:
       # Fail on specified vulnerabilities
       - |
         trivy config \
-          --exit-code 1 \
+          --exit-code "$TRIVY_EXIT_CODE" \
           --ignorefile .trivyignore.yaml \
           --severity "$TRIVY_SEVERITY" \
           --helm-set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
@@ -103,5 +105,6 @@ cve:helm:trivy:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
     - if: '$IGNORE_TRIVY_CVE == "true"'
-      allow_failure: true
+      variables:
+        TRIVY_EXIT_CODE: 0
     - when: on_success
