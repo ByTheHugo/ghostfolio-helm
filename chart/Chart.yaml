@@ -16,11 +16,11 @@ annotations:
 
 dependencies:
   - name: postgresql
-    version: "16.7.4"
+    version: "16.7.13"
     repository: "oci://registry-1.docker.io/bitnamicharts"
     condition: postgresql.enabled
   - name: redis
-    version: "21.1.7"
+    version: "21.2.5"
     repository: "oci://registry-1.docker.io/bitnamicharts"
     condition: redis.enabled
 
@@ -37,10 +37,10 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.0
+version: 0.2.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.172.0"
+appVersion: "2.174.0"
