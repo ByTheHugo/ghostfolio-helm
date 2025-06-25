@@ -13,6 +13,37 @@ entries:
         - name: Hugo CHUPIN
           email: hugo@chupin.xyz
     apiVersion: v2
+    appVersion: 2.174.0
+    created: "2025-06-25T19:01:34.688904496Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.7.13
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 21.2.5
+    description: A Helm chart for Ghostfolio, an open source wealth management software.
+    digest: b8d574147ab18a64b2cee72d21ef3f7cc64eab30a3ea1bb2d1da4c3559eb5aab
+    icon: https://avatars.githubusercontent.com/u/82473144
+    name: ghostfolio
+    type: application
+    urls:
+    - https://github.com/ByTheHugo/ghostfolio-helm/releases/download/ghostfolio-0.2.1/ghostfolio-0.2.1.tgz
+    version: 0.2.1
+  - annotations:
+      artifacthub.io/alternativeName: ghostfolio-helm
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Ghostfolio website
+          url: https://ghostfol.io/
+        - name: Ghostfolio sources
+          url: https://github.com/ghostfolio/ghostfolio
+      artifacthub.io/maintainers: |
+        - name: Hugo CHUPIN
+          email: hugo@chupin.xyz
+    apiVersion: v2
     appVersion: 2.164.0
     created: "2025-05-29T11:55:34.942579842Z"
     dependencies:
@@ -60,4 +91,4 @@ entries:
     urls:
     - https://github.com/ByTheHugo/ghostfolio-helm/releases/download/ghostfolio-0.1.0/ghostfolio-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-29T11:55:34.942602256Z"
+generated: "2025-06-25T19:01:34.688952476Z"
