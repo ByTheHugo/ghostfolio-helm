@@ -162,6 +162,11 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# Additional environment variables
+env:
+# - name: myenv
+#   value: foo
+
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
