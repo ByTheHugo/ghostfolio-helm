@@ -69,8 +69,9 @@ Create the PostgreSQL database URL
 {{ printf "postgresql://%s:%s@%s-postgresql.%s.svc:5432/%s?connect_timeout=300&sslmode=prefer" .Values.postgresql.auth.username .Values.postgresql.auth.password $fullname .Release.Namespace .Values.postgresql.auth.database }}
 {{- end }}
 
+
 {{- define "ghostfolio.externalDatabaseUrl" -}}
-{{- printf "postgresql://%s:%s@%s:%d/%s?%s" .Values.postgresql.user .Values.postgresql.password .Values.postgresql.host (.Values.postgresql.port | int) .Values.postgresql.database .Values.postgresql.options }}
+{{- printf "postgresql://%s:%s@%s:%d/%s?%s" .Values.externalPostgresql.auth.username .Values.externalPostgresql.auth.password .Values.externalPostgresql.host (.Values.externalPostgresql.port | int) .Values.externalPostgresql.auth.database .Values.externalPostgresql.options }}
 {{- end }}
 
 {{/*
