@@ -66,7 +66,7 @@ Create the PostgreSQL database URL
 */}}
 {{- define "ghostfolio.databaseUrl" -}}
 {{- $fullname := (include "ghostfolio.fullname" .) -}}
-{{ printf "postgresql://%s:%s@%s-postgresql.%s.svc:5432/%s?connect_timeout=300&sslmode=prefer" .Values.postgresql.auth.username .Values.postgresql.auth.password $fullname .Release.Namespace .Values.postgresql.auth.database }}
+{{ printf "postgresql://%s:%s@%s-postgresql.%s.svc:5432/%s?connect_timeout=300" .Values.postgresql.auth.username .Values.postgresql.auth.password $fullname .Release.Namespace .Values.postgresql.auth.database }}
 {{- end }}
 
 
