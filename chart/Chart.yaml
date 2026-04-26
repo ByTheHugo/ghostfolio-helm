@@ -10,6 +10,8 @@ annotations:
       url: https://ghostfol.io/
     - name: Ghostfolio sources
       url: https://github.com/ghostfolio/ghostfolio
+    - name: Ghostfolio Helm chart sources
+      url: https://github.com/ByTheHugo/ghostfolio-helm
   artifacthub.io/maintainers: |
     - name: Hugo CHUPIN
       email: hugo@chupin.xyz
@@ -37,7 +39,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.3.1
+version: 0.4.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to

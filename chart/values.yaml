@@ -21,11 +21,13 @@ image:
 ghostfolio:
   ACCESS_TOKEN_SALT: ""
   JWT_SECRET_KEY: ""
-  BASE_CURRENCY: EUR
   API_KEY_COINGECKO_DEMO: ""
   API_KEY_COINGECKO_PRO: ""
   HOST: 0.0.0.0
   PORT: 3333
+  # ENABLE_FEATURE_AUTH_TOKEN: true
+  # REQUEST_TIMEOUT: 2000
+  # LOG_LEVELS: ["debug","error","log","warn"]
 
 # This define the PostgreSQL server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external PostgreSQL server.
@@ -36,6 +38,10 @@ postgresql:
     username: ghostfolio-user
     password: ghostfolio-password
     database: ghostfolio-db
+    secretRef:
+      name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
+      usernameKey: "username"
+      passwordKey: "password"
 externalPostgresql:
   host: postgres
   port: 5432
@@ -43,7 +49,11 @@ externalPostgresql:
     username: external-ghostfolio-user
     password: external-ghostfolio-password
     database: external-ghostfolio-db
-  options: connect_timeout=300&sslmode=prefer
+    secretRef:
+      name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
+      usernameKey: "username"
+      passwordKey: "password"
+  options: connect_timeout=300
 
 # This define the Redis server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external Redis server.
@@ -54,10 +64,18 @@ redis:
   auth:
     enabled: true
     password: redis-password
+    secretRef:
+      name: "" # When defined, override the .redis.auth.password key
+      passwordKey: "password"
 externalRedis:
   host: redis
   port: 6379
-  password: "" # Leave empty to disable authentication
+  auth:
+    enabled: true
+    password: redis-password
+    secretRef:
+      name: "" # When defined, override the .redis.auth.password key
+      passwordKey: "password"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

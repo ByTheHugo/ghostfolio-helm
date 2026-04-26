@@ -54,7 +54,6 @@ Like any other _Helm_ chart, the available configuration options can be found in
     ghostfolio:
       ACCESS_TOKEN_SALT: mysuperrandomstring
       JWT_SECRET_KEY: mysuperrandomstring
-      BASE_CURRENCY: EUR # or USD
 
     # For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
     postgresql:
@@ -63,6 +62,10 @@ Like any other _Helm_ chart, the available configuration options can be found in
         username: ghostfolio-user
         password: ghostfolio-password
         database: ghostfolio-db
+        secretRef:
+          name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
+          usernameKey: "username"
+          passwordKey: "password"
 
     # For more information checkout: https://artifacthub.io/packages/helm/bitnami/redis
     redis:
@@ -71,6 +74,9 @@ Like any other _Helm_ chart, the available configuration options can be found in
       auth:
         enabled: true
         password: redis-password
+        secretRef:
+          name: "" # When defined, override the .redis.auth.password key
+          passwordKey: "password"
 
     ingress:
       enabled: true
@@ -95,6 +101,10 @@ externalPostgresql:
     username: external-ghostfolio-user
     password: external-ghostfolio-password
     database: external-ghostfolio-db
+    secretRef:
+      name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
+      usernameKey: "username"
+      passwordKey: "password"
   options: connect_timeout=300&sslmode=prefer
 ```
 
@@ -108,7 +118,12 @@ redis:
 externalRedis:
   host: redis.domain.fqdn
   port: 6379
-  password: "" # Leave empty to disable authentication
+  auth:
+    enabled: false
+    password: ""
+    secretRef:
+      name: "" # When defined, override the .redis.auth.password key
+      passwordKey: "password"
 ```
 
 <p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
@@ -141,7 +156,7 @@ helm upgrade --install ghostfolio charts/ghostfolio -f ghostfolio.values.yaml
 If you want to install a specific version of _Ghostfolio_, you must define the `.image.tag` key in the `values.yaml` file or directly inline:
 
 ```bash
-helm upgrade --install --set "image.tag=2.163.0" ghostfolio ghostfolio/ghostfolio
+helm upgrade --install --set "image.tag=3.0.1" ghostfolio ghostfolio/ghostfolio
 ```
 
 ### 1.3.3. Verify the deployment
