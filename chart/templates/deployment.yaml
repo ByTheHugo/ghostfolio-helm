@@ -43,10 +43,22 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: {{ include "ghostfolio.fullname" . }}
+                name: {{ include "ghostfolio.secretName" . }}
           env:
             - name: DATABASE_URL
               value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?$(POSTGRES_OPTIONS)"
+            {{- if .Values.ghostfolio.existingSecret }}
+            - name: ACCESS_TOKEN_SALT
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.ghostfolio.existingSecretAccessTokenSaltKey }}
+                  name: {{ .Values.ghostfolio.existingSecret }}
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.ghostfolio.existingSecretJwtSecretKeyKey }}
+                  name: {{ .Values.ghostfolio.existingSecret }}
+            {{- end }}
             {{- if and .Values.redis.enabled .Values.redis.auth.enabled .Values.redis.auth.secretRef.name }}
             - name: "REDIS_PASSWORD"
               valueFrom:
