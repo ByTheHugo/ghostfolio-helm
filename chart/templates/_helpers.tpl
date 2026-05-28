@@ -68,3 +68,14 @@ Create the Redis database URL
 {{- $fullname := (include "ghostfolio.fullname" .) -}}
 {{ printf "%s-redis-master.%s.svc" $fullname .Release.Namespace }}
 {{- end }}
+
+{{/*
+Return the secret name for Ghostfolio configuration.
+*/}}
+{{- define "ghostfolio.secretName" -}}
+{{- if .Values.ghostfolio.existingSecret -}}
+{{- .Values.ghostfolio.existingSecret -}}
+{{- else -}}
+{{- include "ghostfolio.fullname" . -}}
+{{- end -}}
+{{- end -}}

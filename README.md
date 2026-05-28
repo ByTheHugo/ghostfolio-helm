@@ -21,8 +21,10 @@ The charts are built and then published to these project _GitHub Pages_, allowin
 - [Ghostfolio Helm Chart](#ghostfolio-helm-chart)
   - [1.1. Prerequisite](#11-prerequisite)
   - [1.2. Configure the application](#12-configure-the-application)
-    - [1.2.1. Use an external PostgreSQL server](#121-use-an-external-postgresql-server)
-    - [1.2.2. Use an external Redis server](#122-use-an-external-redis-server)
+    - [1.2.1. Secret management](#121-secret-management)
+    - [1.2.2. Use an external PostgreSQL server](#122-use-an-external-postgresql-server)
+    - [1.2.3. Use an external Redis server](#123-use-an-external-redis-server)
+    - [1.2.4. Extra manifests](#124-extra-manifests)
   - [1.3. Install the application](#13-install-the-application)
     - [1.3.1. Add the GitHub Helm repository (optional)](#131-add-the-github-helm-repository-optional)
     - [1.3.2. Install the chart](#132-install-the-chart)
@@ -52,8 +54,10 @@ Like any other _Helm_ chart, the available configuration options can be found in
 
     ```yaml
     ghostfolio:
-      ACCESS_TOKEN_SALT: mysuperrandomstring
-      JWT_SECRET_KEY: mysuperrandomstring
+      # ACCESS_TOKEN_SALT and JWT_SECRET_KEY are auto-generated if left empty.
+      # See section 1.2.1 for more options.
+      ACCESS_TOKEN_SALT: ""
+      JWT_SECRET_KEY: ""
 
     # For more information checkout: https://artifacthub.io/packages/helm/bitnami/postgresql
     postgresql:
@@ -87,7 +91,39 @@ Like any other _Helm_ chart, the available configuration options can be found in
               pathType: ImplementationSpecific
     ```
 
-### 1.2.1. Use an external PostgreSQL server
+### 1.2.1. Secret management
+
+By default, `ACCESS_TOKEN_SALT` and `JWT_SECRET_KEY` are **automatically generated** (64-character random strings) on first install. They are preserved across upgrades — if the values are left empty and a secret already exists in the cluster, the existing values are reused.
+
+You have three options:
+
+1. **Auto-generated (default)**: leave `ACCESS_TOKEN_SALT` and `JWT_SECRET_KEY` empty.
+
+    ```yaml
+    ghostfolio:
+      ACCESS_TOKEN_SALT: ""
+      JWT_SECRET_KEY: ""
+    ```
+
+2. **Explicit values**: provide your own strings.
+
+    ```yaml
+    ghostfolio:
+      ACCESS_TOKEN_SALT: mysuperrandomstring
+      JWT_SECRET_KEY: mysuperrandomstring
+    ```
+
+3. **Existing secret**: reference a pre-existing Kubernetes Secret (e.g. managed by ExternalSecrets, SealedSecrets, or Vault). When set, the chart does **not** create its own Secret resource. The existing secret must contain at least `ACCESS_TOKEN_SALT` and `JWT_SECRET_KEY` keys, plus all other keys the deployment expects (e.g. `REDIS_HOST`, `POSTGRES_HOST`, etc.).
+
+    ```yaml
+    ghostfolio:
+      existingSecret: my-ghostfolio-secret
+      # Override key names if your secret uses different keys:
+      # existingSecretAccessTokenSaltKey: ACCESS_TOKEN_SALT
+      # existingSecretJwtSecretKeyKey: JWT_SECRET_KEY
+    ```
+
+### 1.2.2. Use an external PostgreSQL server
 
 By default, the chart deploys a _PostgreSQL_ server via a subchart dependency. However, if want to use your own instance, you can set the following values:
 
@@ -108,7 +144,7 @@ externalPostgresql:
   options: connect_timeout=300&sslmode=prefer
 ```
 
-### 1.2.2. Use an external Redis server
+### 1.2.3. Use an external Redis server
 
 By default, the chart deploys a _Redis_ server via a subchart dependency. However, if want to use your own instance, you can set the following values:
 
@@ -124,6 +160,45 @@ externalRedis:
     secretRef:
       name: "" # When defined, override the .redis.auth.password key
       passwordKey: "password"
+```
+
+<p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
+
+### 1.2.4. Extra manifests
+
+You can deploy additional Kubernetes resources alongside the chart by using the `extraManifests` value. Each entry is a raw Kubernetes manifest that is templated through Helm:
+
+```yaml
+extraManifests:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: ghostfolio-secrets
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: vault
+        kind: SecretStore
+      target:
+        name: ghostfolio-secrets
+      data:
+        - secretKey: ACCESS_TOKEN_SALT
+          remoteRef:
+            key: ghostfolio
+            property: access_token_salt
+        - secretKey: JWT_SECRET_KEY
+          remoteRef:
+            key: ghostfolio
+            property: jwt_secret_key
+```
+
+When using `extraManifests` to create a secret that holds `ACCESS_TOKEN_SALT` and `JWT_SECRET_KEY`, combine it with the `existingSecret` option:
+
+```yaml
+ghostfolio:
+  existingSecret: ghostfolio-secrets
+  existingSecretAccessTokenSaltKey: ACCESS_TOKEN_SALT
+  existingSecretJwtSecretKeyKey: JWT_SECRET_KEY
 ```
 
 <p align="right"><a href="#ghostfolio-helm-chart">back to top</a></p>
