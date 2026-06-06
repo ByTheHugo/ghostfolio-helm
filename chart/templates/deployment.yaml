@@ -1,7 +1,9 @@
+{{- $fullname := (include "ghostfolio.fullname" .) -}}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ghostfolio.fullname" . }}
+  name: {{ $fullname }}
   labels:
     {{- include "ghostfolio.labels" . | nindent 4 }}
 spec:
@@ -43,10 +45,8 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name: {{ include "ghostfolio.secretName" . }}
+                name:  {{ printf "%s-configuration" ($fullname) }}
           env:
-            - name: DATABASE_URL
-              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?$(POSTGRES_OPTIONS)"
             {{- if .Values.ghostfolio.existingSecret }}
             - name: ACCESS_TOKEN_SALT
               valueFrom:
@@ -96,7 +96,40 @@ spec:
                 secretKeyRef:
                   key: {{ .Values.externalPostgresql.auth.secretRef.passwordKey }}
                   name: {{ .Values.externalPostgresql.auth.secretRef.name }}
+            {{- else }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name:  {{ printf "%s-configuration-postgresql" ($fullname) }}
             {{- end }}
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_HOST
+                  name:  {{ printf "%s-configuration-postgresql" ($fullname) }}
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PORT
+                  name:  {{ printf "%s-configuration-postgresql" ($fullname) }}
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_DB
+                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
+            - name: POSTGRES_OPTIONS
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_OPTIONS
+                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?$(POSTGRES_OPTIONS)"
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
