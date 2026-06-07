@@ -3,6 +3,8 @@
 **/charts/*.tgz
 # Temporary values
 *.values.yaml
+# Temporary debug manifests
+manifests.yaml
 # Chart releaser
 .cr-release-packages
 .cr-index

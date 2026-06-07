@@ -45,7 +45,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
-                name:  {{ printf "%s-configuration" ($fullname) }}
+                name: {{ printf "%s-configuration" ($fullname) }}
+          {{- with .Values.extraEnvFrom }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             {{- if .Values.ghostfolio.existingSecret }}
             - name: ACCESS_TOKEN_SALT
@@ -106,7 +109,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: POSTGRES_PASSWORD
-                  name:  {{ printf "%s-configuration-postgresql" ($fullname) }}
+                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
             {{- end }}
             - name: POSTGRES_HOST
               valueFrom:
@@ -130,7 +133,7 @@ spec:
                   name: {{ printf "%s-configuration-postgresql" ($fullname) }}
             - name: DATABASE_URL
               value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?$(POSTGRES_OPTIONS)"
-          {{- with .Values.env }}
+          {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:

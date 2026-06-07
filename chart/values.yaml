@@ -18,19 +18,18 @@ image:
   tag: ""
 
 # This define the Ghostfolio configuration
+# You can dynamically add environment values according to your needs.
 ghostfolio:
-  ACCESS_TOKEN_SALT: ""
-  JWT_SECRET_KEY: ""
-  API_KEY_COINGECKO_DEMO: ""
-  API_KEY_COINGECKO_PRO: ""
   HOST: 0.0.0.0
   PORT: 3333
   # ENABLE_FEATURE_AUTH_TOKEN: true
   # REQUEST_TIMEOUT: 2000
   # LOG_LEVELS: ["debug","error","log","warn"]
-  existingSecret: ""
-  existingSecretAccessTokenSaltKey: "ACCESS_TOKEN_SALT"
-  existingSecretJwtSecretKeyKey: "JWT_SECRET_KEY"
+  ## It is recommended that you provide confidential values using either the .extraEnv or the .extraEnvFrom key.
+  ACCESS_TOKEN_SALT: ""
+  JWT_SECRET_KEY: ""
+  # API_KEY_COINGECKO_DEMO: ""
+  # API_KEY_COINGECKO_PRO: ""
 
 # This define the PostgreSQL server configuration that will be deployed using Helm subchart.
 # Set the .enabled key to false to use an external PostgreSQL server.
@@ -184,9 +183,12 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional environment variables
-env:
+extraEnv:
 # - name: myenv
 #   value: foo
+extraEnvFrom:
+# - secretRef:
+#     name: foo
 
 # Additional volumes on the output Deployment definition.
 volumes: []
