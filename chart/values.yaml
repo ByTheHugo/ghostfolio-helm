@@ -40,10 +40,9 @@ postgresql:
     username: ghostfolio-user
     password: ghostfolio-password
     database: ghostfolio-db
-    secretRef:
-      name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
-      usernameKey: "username"
-      passwordKey: "password"
+    existingSecret: ""
+    secretKeys:
+      userPasswordKey: password
 externalPostgresql:
   host: postgres
   port: 5432
@@ -51,10 +50,9 @@ externalPostgresql:
     username: external-ghostfolio-user
     password: external-ghostfolio-password
     database: external-ghostfolio-db
-    secretRef:
-      name: "" # When defined, override the .postgresql.auth.username and .postgresql.auth.password keys
-      usernameKey: "username"
-      passwordKey: "password"
+    existingSecret: ""
+    secretKeys:
+      userPasswordKey: password
   options: connect_timeout=300
 
 # This define the Redis server configuration that will be deployed using Helm subchart.
@@ -66,18 +64,16 @@ redis:
   auth:
     enabled: true
     password: redis-password
-    secretRef:
-      name: "" # When defined, override the .redis.auth.password key
-      passwordKey: "password"
+    existingSecret: ""
+    existingSecretPasswordKey: ""
 externalRedis:
   host: redis
   port: 6379
   auth:
     enabled: true
     password: redis-password
-    secretRef:
-      name: "" # When defined, override the .redis.auth.password key
-      passwordKey: "password"
+    existingSecret: ""
+    existingSecretPasswordKey: ""
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

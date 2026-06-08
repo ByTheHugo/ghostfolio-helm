@@ -46,6 +46,8 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ printf "%s-configuration" ($fullname) }}
+            - secretRef:
+                name: {{ printf "%s-configuration-redis" ($fullname) }}
           {{- with .Values.extraEnvFrom }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -62,55 +64,44 @@ spec:
                   key: {{ .Values.ghostfolio.existingSecretJwtSecretKeyKey }}
                   name: {{ .Values.ghostfolio.existingSecret }}
             {{- end }}
-            {{- if and .Values.redis.enabled .Values.redis.auth.enabled .Values.redis.auth.secretRef.name }}
+            {{- if and .Values.redis.enabled .Values.redis.auth.enabled .Values.redis.auth.existingSecret }}
             - name: "REDIS_PASSWORD"
               valueFrom:
                 secretKeyRef:
-                  key: {{ .Values.redis.auth.secretRef.passwordKey }}
-                  name: {{ .Values.redis.auth.secretRef.name }}
+                  key: {{ .Values.redis.auth.existingSecretPasswordKey }}
+                  name: {{ .Values.redis.auth.existingSecret }}
             {{- end }}
-            {{- if and (not .Values.redis.enabled) .Values.externalRedis.auth.enabled .Values.externalRedis.auth.secretRef.name }}
+            {{- if and (not .Values.redis.enabled) .Values.externalRedis.auth.enabled .Values.externalRedis.auth.existingSecret }}
             - name: "REDIS_PASSWORD"
               valueFrom:
                 secretKeyRef:
-                  key: {{ .Values.externalRedis.auth.secretRef.passwordKey }}
-                  name: {{ .Values.externalRedis.auth.secretRef.name }}
+                  key: {{ .Values.externalRedis.auth.existingSecretPasswordKey }}
+                  name: {{ .Values.externalRedis.auth.existingSecret }}
             {{- end }}
-            {{- if and .Values.postgresql.enabled .Values.postgresql.auth.secretRef.name }}
-            - name: "POSTGRES_USER"
-              valueFrom:
-                secretKeyRef:
-                  key: {{ .Values.postgresql.auth.secretRef.usernameKey }}
-                  name: {{ .Values.postgresql.auth.secretRef.name }}
+            {{- if and (not .Values.postgresql.enabled) .Values.externalPostgresql.auth.existingSecret }}
             - name: "POSTGRES_PASSWORD"
               valueFrom:
                 secretKeyRef:
-                  key: {{ .Values.postgresql.auth.secretRef.passwordKey }}
-                  name: {{ .Values.postgresql.auth.secretRef.name }}
-            {{- end }}
-            {{- if and (not .Values.postgresql.enabled) .Values.externalPostgresql.auth.secretRef.name }}
-            - name: "POSTGRES_USER"
-              valueFrom:
-                secretKeyRef:
-                  key: {{ .Values.externalPostgresql.auth.secretRef.usernameKey }}
-                  name: {{ .Values.externalPostgresql.auth.secretRef.name }}
+                  key: {{ .Values.externalPostgresql.auth.secretKeys.userPasswordKey }}
+                  name: {{ .Values.externalPostgresql.auth.existingSecret }}
+            {{- else if and .Values.postgresql.enabled .Values.postgresql.auth.existingSecret }}
             - name: "POSTGRES_PASSWORD"
               valueFrom:
                 secretKeyRef:
-                  key: {{ .Values.externalPostgresql.auth.secretRef.passwordKey }}
-                  name: {{ .Values.externalPostgresql.auth.secretRef.name }}
+                  key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+                  name: {{ .Values.postgresql.auth.existingSecret }}
             {{- else }}
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_USER
-                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: POSTGRES_PASSWORD
                   name: {{ printf "%s-configuration-postgresql" ($fullname) }}
             {{- end }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: {{ printf "%s-configuration-postgresql" ($fullname) }}
             - name: POSTGRES_HOST
               valueFrom:
                 secretKeyRef:

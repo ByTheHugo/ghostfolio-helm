@@ -26,37 +26,58 @@ lint:helm:
         --set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
         --set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey"
 
-deploy:helm:
-  stage: deploy
-  image: "${REGISTRY_URL}/paas/alpine/helm:${HELM_VERSION}"
+tests:pytest:
+  stage: tests
+  image: "${REGISTRY_URL}/paas/alpine:${ALPINE_VERSION}"
   before_script:
-    - apk add kubectl
-    - helm version
-    - kubectl version --client
+    - apk add --no-cache helm python3 py3-pip
+    - python3 -m pip install --no-cache-dir --break-system-packages -r tests/requirements.txt
+    - python3 -V
+    - python3 -m pytest --version
+    - helm dependency update chart
   script:
-    - cd chart
-    - helm dependency update
+    - |
+      python3 -m pytest tests \
+        --retries 2 --retry-delay 5 \
+        --junit-xml="${RESULTS_FOLDER}/pytest-${CI_COMMIT_SHORT_SHA}.xml" \
+        --html="${RESULTS_FOLDER}/pytest-${CI_COMMIT_SHORT_SHA}.html"
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
+  artifacts:
+    paths:
+      - "${RESULTS_FOLDER}"
+    reports:
+      junit: "$RESULTS_FOLDER/pytest-${CI_COMMIT_SHORT_SHA}.xml"
+    expire_in: 1 day
+    when: always
+
+deploy:helm:
+  extends: .helm-release
+  resource_group: deploy-helm
+
+deploy:helm:external:
+  extends: .helm-release
+  resource_group: deploy-helm-external
+  script:
     - |
       helm upgrade \
         --install \
         --set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
         --set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey" \
         --set "global.defaultStorageClass=${HELM_STORAGE_CLASS}" \
+        --set "postgresql.enabled=false" \
+        --set "externalPostgresql.host=${POSTGRESQL_HOST}" \
+        --set "externalPostgresql.port=${POSTGRESQL_PORT}" \
+        --set "externalPostgresql.auth.username=${POSTGRESQL_USERNAME}" \
+        --set "externalPostgresql.auth.password=${POSTGRESQL_PASSWORD}" \
+        --set "externalPostgresql.auth.database=${POSTGRESQL_DATABASE}" \
+        --set "redis.enabled=false" \
+        --set "externalRedis.host=${REDIS_HOST}" \
+        --set "externalRedis.auth.enabled=false" \
         --create-namespace \
         --wait --wait-for-jobs \
         --timeout "$HELM_TIMEOUT" \
         -n "$HELM_NAMESPACE" \
         "${HELM_RELEASE}-${CI_JOB_ID}" ./
-  after_script:
-    - helm uninstall -n "$HELM_NAMESPACE" "${HELM_RELEASE}-${CI_JOB_ID}"
-    - kubectl delete -n "$HELM_NAMESPACE" pvc --all --ignore-not-found
-  retry: 2
-  rules:
-    - if: '$SKIP_DEPLOY=="true"'
-      when: never
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    - when: on_success
 
 cve:helm:trivy:
   stage: cve

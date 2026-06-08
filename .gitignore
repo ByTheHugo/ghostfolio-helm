@@ -5,10 +5,17 @@
 *.values.yaml
 # Temporary debug manifests
 manifests.yaml
+*.manifests.yaml
 # Chart releaser
 .cr-release-packages
 .cr-index
 .pages
+# pyTests
+__pycache__
+.pytest_cache
+tmp
+!tests/files/*.values.yaml
+venv
 
 ### VisualStudioCode ###
 .vscode/*

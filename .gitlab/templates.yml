@@ -1,0 +1,32 @@
+
+.helm-release:
+  stage: deploy
+  image: "${REGISTRY_URL}/paas/alpine/helm:${HELM_VERSION}"
+  before_script:
+    - apk add kubectl
+    - helm version
+    - kubectl version --client
+    - cd chart
+    - helm dependency update
+  script:
+    - |
+      helm upgrade \
+        --install \
+        --set "ghostfolio.ACCESS_TOKEN_SALT=superSecretTokenSalt" \
+        --set "ghostfolio.JWT_SECRET_KEY=superSecretJwtKey" \
+        --set "global.defaultStorageClass=${HELM_STORAGE_CLASS}" \
+        --create-namespace \
+        --wait --wait-for-jobs \
+        --timeout "$HELM_TIMEOUT" \
+        -n "$HELM_NAMESPACE" \
+        "${HELM_RELEASE}-${CI_JOB_ID}" ./
+  after_script:
+    - helm uninstall -n "$HELM_NAMESPACE" "${HELM_RELEASE}-${CI_JOB_ID}"
+    - kubectl delete -n "$HELM_NAMESPACE" pvc --all --ignore-not-found
+  retry: 2
+  rules:
+    - if: '$SKIP_DEPLOY=="true"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - when: on_success
