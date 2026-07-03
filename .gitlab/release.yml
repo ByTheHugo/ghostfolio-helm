@@ -14,6 +14,6 @@ publish:helm:
     - cr index  --remote github --package-path .cr-packages --push --owner "$CR_OWNER" --git-repo "$CR_GIT_REPO" --token "$CR_TOKEN" --charts-repo "https://${CR_OWNER}.github.io/${CR_GIT_REPO}"
   artifacts:
     paths:
-      - "*.tgz"
-      - index.yaml
+      - .cr-packages
+      - .cr-index
     when: always
